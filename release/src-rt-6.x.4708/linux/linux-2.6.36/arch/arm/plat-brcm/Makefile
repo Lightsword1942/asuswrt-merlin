@@ -8,6 +8,7 @@ endif
 obj-$(CONFIG_PLAT_MPCORE) += plat-head.o
 obj-$(CONFIG_PLAT_MPCORE) += mpcore_core.o
 obj-$(CONFIG_PLAT_MPCORE) += mpcore_gtimer.o
+obj-$(CONFIG_PLAT_MPCORE) += wps_led.o
 obj-$(CONFIG_PLAT_MPCORE) += mpcore_cache.o
 obj-$(CONFIG_PLAT_MPCORE) += clock.o
 obj-$(CONFIG_PLAT_MPCORE) += platsmp.o 
