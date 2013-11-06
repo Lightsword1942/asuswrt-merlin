@@ -170,14 +170,14 @@ static struct clk clk_lcpll = {
  */
 
 static struct clk clk_lcpll_ch[4] = {
-	{.ops = &lcpll_chan_ops, .parent = &clk_lcpll, .type = CLK_DIV,
-	.name = "lcpll_ch0", .chan = 0},
-	{.ops = &lcpll_chan_ops, .parent = &clk_lcpll, .type = CLK_DIV,
-	.name = "lcpll_ch1", .chan = 1},
-	{.ops = &lcpll_chan_ops, .parent = &clk_lcpll, .type = CLK_DIV,
-	.name = "lcpll_ch2", .chan = 2},
-	{.ops = &lcpll_chan_ops, .parent = &clk_lcpll, .type = CLK_DIV,
-	.name = "lcpll_ch3", .chan = 3},
+	{ .ops	= &lcpll_chan_ops, .parent = &clk_lcpll, .type = CLK_DIV,
+	  .name	= "lcpll_ch0", .chan	= 0, },
+	{ .ops	= &lcpll_chan_ops, .parent = &clk_lcpll, .type = CLK_DIV,
+	  .name	= "lcpll_ch1", .chan	= 1, },
+	{ .ops	= &lcpll_chan_ops, .parent = &clk_lcpll, .type = CLK_DIV,
+	  .name	= "lcpll_ch2", .chan	= 2, },
+	{ .ops	= &lcpll_chan_ops, .parent = &clk_lcpll, .type = CLK_DIV,
+	  .name	= "lcpll_ch3", .chan	= 3, },
 };
 
 /*
@@ -325,18 +325,18 @@ static struct clk clk_genpll = {
  */
 
 static struct clk clk_genpll_ch[6] = {
-	{.ops = &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
-	.name = "genpll_ch0", .chan = 0},
-	{.ops = &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
-	.name = "genpll_ch1", .chan = 1},
-	{.ops = &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
-	.name = "genpll_ch2", .chan = 2},
-	{.ops = &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
-	.name = "genpll_ch3", .chan = 3},
-	{.ops = &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
-	.name = "genpll_ch4", .chan = 4},
-	{.ops = &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
-	.name = "genpll_ch5", .chan = 5}
+	{ .ops	= &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
+	  .name	= "genpll_ch0", .chan	= 0, },
+	{ .ops	= &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
+	  .name	= "genpll_ch1", .chan	= 1, },
+	{ .ops	= &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
+	  .name	= "genpll_ch2", .chan	= 2, },
+	{ .ops	= &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
+	  .name	= "genpll_ch3", .chan	= 3, },
+	{ .ops	= &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
+	  .name	= "genpll_ch4", .chan	= 4, },
+	{ .ops	= &genpll_chan_ops, .parent = &clk_genpll, .type = CLK_DIV,
+	  .name	= "genpll_ch5", .chan	= 5, },
 };
 
 /*
