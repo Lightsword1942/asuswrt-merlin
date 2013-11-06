@@ -372,6 +372,90 @@ KBUILD_CFLAGS += -DBCMDRIVER -Dlinux
 #KBUILD_CFLAGS += -DBCMDBG
 
 
+#[MJ] add for debugging 5G crash.
+#CFLAGS += -DBCMDBG -DBCMDBG_ASSERT -DBCMDBG_ERR -DWLMSG_ASSOC -DWLTEST
+#[MJ] add-end for debugging 5G crash
+#Enable debug flag start
+#CFLAGS += -DBCMDBG -DWLTEST
+#Enable debug flag end
+ifeq ($(PROFILE),R7000)
+KBUILD_CFLAGS += -DMULTIPLE_SSID -DSAMBA_ENABLE -DX_ST_ML
+
+KBUILD_CFLAGS += -DU12H270 -DR7000
+KBUILD_CFLAGS += -DBCM53125
+
+KBUILD_CFLAGS += -DINCLUDE_USB_LED
+KBUILD_CFLAGS += -DWIFI_LED_BLINKING
+KBUILD_CFLAGS += -DIGMP_PROXY
+KBUILD_CFLAGS += -D__CONFIG_IGMP_SNOOPING__
+KBUILD_CFLAGS += -DINCLUDE_L2TP
+KBUILD_CFLAGS += -DAP_MODE
+KBUILD_CFLAGS += -DINCLUDE_DUAL_BAND
+KBUILD_CFLAGS += -DCONFIG_RUSSIA_IPTV
+KBUILD_CFLAGS += -DCONFIG_KERNEL_2_6_36
+KBUILD_CFLAGS += -DINCLUDE_ACCESSCONTROL
+endif
+
+ifeq ($(PROFILE),R6300v2)
+KBUILD_CFLAGS += -DMULTIPLE_SSID -DSAMBA_ENABLE -DX_ST_ML
+
+KBUILD_CFLAGS += -DU12H240 -DR6300v2
+KBUILD_CFLAGS += -DBCM53125
+
+KBUILD_CFLAGS += -DINCLUDE_USB_LED
+KBUILD_CFLAGS += -DIGMP_PROXY
+KBUILD_CFLAGS += -D__CONFIG_IGMP_SNOOPING__
+KBUILD_CFLAGS += -DINCLUDE_L2TP
+KBUILD_CFLAGS += -DAP_MODE
+KBUILD_CFLAGS += -DINCLUDE_DUAL_BAND
+KBUILD_CFLAGS += -DCONFIG_RUSSIA_IPTV
+KBUILD_CFLAGS += -DCONFIG_KERNEL_2_6_36
+#KBUILD_CFLAGS += -DINCLUDE_ACCESSCONTROL
+endif
+
+ifeq ($(PROFILE),R6250)
+KBUILD_CFLAGS += -DMULTIPLE_SSID -DSAMBA_ENABLE -DX_ST_ML
+KBUILD_CFLAGS += -DU12H245 -DR6250
+KBUILD_CFLAGS += -DBCM53125
+KBUILD_CFLAGS += -DINCLUDE_USB_LED
+KBUILD_CFLAGS += -DIGMP_PROXY
+KBUILD_CFLAGS += -D__CONFIG_IGMP_SNOOPING__
+KBUILD_CFLAGS += -DINCLUDE_L2TP
+KBUILD_CFLAGS += -DAP_MODE
+KBUILD_CFLAGS += -DINCLUDE_DUAL_BAND
+KBUILD_CFLAGS += -DCONFIG_RUSSIA_IPTV
+KBUILD_CFLAGS += -DCONFIG_KERNEL_2_6_36
+#KBUILD_CFLAGS += -DINCLUDE_ACCESSCONTROL
+endif
+
+ifeq ($(PROFILE),R6200v2)
+KBUILD_CFLAGS += -DMULTIPLE_SSID -DSAMBA_ENABLE -DX_ST_ML
+KBUILD_CFLAGS += -DU12H264 -DR6200v2
+KBUILD_CFLAGS += -DBCM53125
+KBUILD_CFLAGS += -DINCLUDE_USB_LED
+KBUILD_CFLAGS += -DIGMP_PROXY
+KBUILD_CFLAGS += -D__CONFIG_IGMP_SNOOPING__
+KBUILD_CFLAGS += -DINCLUDE_L2TP
+KBUILD_CFLAGS += -DAP_MODE
+KBUILD_CFLAGS += -DINCLUDE_DUAL_BAND
+KBUILD_CFLAGS += -DCONFIG_RUSSIA_IPTV
+KBUILD_CFLAGS += -DCONFIG_KERNEL_2_6_36
+#KBUILD_CFLAGS += -DINCLUDE_ACCESSCONTROL
+endif
+
+
+# Foxconn added pling 12/26/2011, to define f/w region
+ifeq ($(FW_TYPE),WW)
+KBUILD_CFLAGS += -DWW_VERSION
+endif
+ifeq ($(FW_TYPE),RU)
+KBUILD_CFLAGS += -DRU_VERSION
+endif
+
+KBUILD_CFLAGS	+= -DBCMVISTAROUTER
+KBUILD_CFLAGS += -DINCLUDE_QOS
+KBUILD_CFLAGS += -DRESTART_ALL_PROCESSES
+
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
 KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
@@ -497,7 +581,7 @@ scripts: scripts_basic include/config/auto.conf include/config/tristate.conf
 # Objects we will link into vmlinux / subdirs we need to visit
 init-y		:= init/
 drivers-y	:= drivers/ sound/ firmware/
-net-y		:= net/
+net-y		:= net/ ../../../../ap/acos/acos_nat/
 libs-y		:= lib/
 core-y		:= usr/
 endif # KBUILD_EXTMOD
@@ -549,7 +633,8 @@ all: vmlinux
 
 # Broadcom features compile options
 ifneq ($(CONFIG_BCM_CTF),)
-KBUILD_CFLAGS += -DHNDCTF -DCTFPOOL -DCTFMAP -DPKTC -DCTF_PPPOE
+#KBUILD_CFLAGS += -DHNDCTF -DCTFPOOL -DCTFMAP -DPKTC -DCTF_PPPOE
+KBUILD_CFLAGS += -DHNDCTF -DCTFPOOL -DCTFMAP -DPKTC
 ifneq ($(CONFIG_WL_USBAP),)
 KBUILD_CFLAGS += -DCTFPOOL_SPINLOCK
 endif
@@ -558,12 +643,8 @@ KBUILD_CFLAGS += -DCTF_IPV6
 endif
 endif
 
-ifneq ($(CONFIG_BCM_FA),)
-KBUILD_CFLAGS += -DBCMFA
-endif
-
-ifneq ($(CONFIG_BCM47XX),)
-KBUILD_CFLAGS += -DBCM47XX
+ifneq ($(CONFIG_PROXYARP),)
+KBUILD_CFLAGS += -DPROXYARP
 endif
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
@@ -645,6 +726,9 @@ ifneq ($(KCFLAGS),)
         KBUILD_CFLAGS += $(KCFLAGS)
 endif
 
+# Bob added to build debug version wireless driver
+#KBUILD_CFLAGS += -DDHD_DEBUG -DWLTEST -DBCMDBG
+
 # Use --build-id when available.
 LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
 			      $(call cc-ldoption, -Wl$(comma)--build-id,))
@@ -673,6 +757,9 @@ export	INSTALL_PATH ?= /boot
 # makefile but the argument can be passed to make if needed.
 #
 
+# /* Fxcn port-S Wins, 0729-09 */
+INSTALL_MOD_PATH = $(TARGETDIR)
+# /* Fxcn port-E Wins, 0729-09 */
 MODLIB	= $(INSTALL_MOD_PATH)/lib/modules/$(KERNELRELEASE)
 export MODLIB
 
@@ -1113,7 +1200,9 @@ _modinst_:
 	@cp -f $(objtree)/modules.order $(MODLIB)/
 	@cp -f $(objtree)/modules.builtin $(MODLIB)/
 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
-
+# Foxconn, add by MJ., for debugging. 
+	@echo "================================================"
+# Foxconn, end by MJ., for debugging.
 # This depmod is only for convenience to give the initial
 # boot a modules.dep even before / is mounted read-write.  However the
 # boot script depmod is the master version.
@@ -1360,7 +1449,10 @@ modules_install: _emodinst_ _emodinst_post
 install-dir := $(if $(INSTALL_MOD_DIR),$(INSTALL_MOD_DIR),extra)
 PHONY += _emodinst_
 _emodinst_:
+	@echo WinsDbg _emodinst_ MODLIB = $(MODLIB)
+	@echo WinsDbg _emodinst_ TARGETDIR = $(TARGETDIR)
 	$(Q)mkdir -p $(MODLIB)/$(install-dir)
+	@echo WinsDbg _emodinst_ install-dir = $(install-dir)
 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
 
 PHONY += _emodinst_post
