@@ -134,6 +134,10 @@
 
 #include <typedefs.h>
 #include <bcmdefs.h>
+/* Foxconn added start, pptp, Winster Chan, 06/26/2006 */
+#include <linux/if_pppox.h>
+#include <linux/ppp_comm.h>
+/* Foxconn added end, pptp, Winster Chan, 06/26/2006 */
 
 /* Instead of increasing this, you should create a hash table. */
 #define MAX_GRO_SKBS 8
