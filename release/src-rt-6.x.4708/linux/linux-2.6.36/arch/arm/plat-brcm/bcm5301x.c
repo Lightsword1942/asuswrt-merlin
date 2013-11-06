@@ -17,6 +17,7 @@
 #include <asm/mach/map.h>
 #include <asm/clkdev.h>
 #include <asm/uaccess.h>
+#include <linux/uaccess.h>
 #include <mach/clkdev.h>
 #include <mach/io_map.h>
 #include <plat/bsp.h>
