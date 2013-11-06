@@ -42,6 +42,39 @@
 #define DEVID53019	0x53019	/* 53019 */
 #define ROBO_IS_BCM5301X(id) ((id) == DEVID53010 || (id) == DEVID53011 || (id) == DEVID53012 || \
 (id) == DEVID53018 || (id) == DEVID53019)
+/* foxconn added start, zacker, 10/15/2010 */
+#define LAN_VLAN_ENTRY_IDX          (1)//LAN is VLAN ID 1
+#define WAN_VLAN_ENTRY_IDX          (2)//WAN is VLAN ID 2
+#define IPTV_VLAN_ENTRY_IDX         (3)//IPTV is VLAN ID 3
+#define LAN_VLAN_ENTRY_IDX_VAL      (0x30 + LAN_VLAN_ENTRY_IDX)//'1'
+#define WAN_VLAN_ENTRY_IDX_VAL      (0x30 + WAN_VLAN_ENTRY_IDX)//'2'
+#define IPTV_VLAN_ENTRY_IDX_VAL     (0x30 + IPTV_VLAN_ENTRY_IDX)//'3'
+#if defined(R7000)
+#define ROBO_LAN_PORTMAP            (0x1E)
+#define ROBO_WAN_PORTMAP            (0x1)
+#define ROBO_LAN_PORT_IDX_START     (1)
+#define ROBO_LAN_PORT_IDX_END       (4)
+#define ROBO_WAN_PORT               (0)
+#else
+#define ROBO_LAN_PORTMAP            (0x0F)
+#define ROBO_WAN_PORTMAP            (0x10)
+#define ROBO_LAN_PORT_IDX_START     (0)
+#define ROBO_LAN_PORT_IDX_END       (3)
+#define ROBO_WAN_PORT               (4)
+
+#endif
+#define ROBO_INVALID_PORT_SPEED     (0x03)
+
+/*foxconn Han edited start, 05/17/2013 for R7000 don't have to do this*/
+#if (defined R7000)
+#define ROBO_PORT_TO_LABEL_PORT(a)  (5-(a))
+#define LABEL_PORT_TO_ROBO_PORT(a)  (5-(a))
+#else
+/*foxconn Han edited end, 05/17/2013 for R7000 don't have to do this*/
+#define ROBO_PORT_TO_LABEL_PORT(a)  ((a) + 1)
+#define LABEL_PORT_TO_ROBO_PORT(a)  ((a) - 1) /* foxconn added, zacker, 12/13/2011 */
+#endif /*defined R7000*/
+/* foxconn added end, zacker, 10/15/2010 */
 
 /* Power save duty cycle times */
 #define MAX_NO_PHYS		5
@@ -149,6 +182,15 @@ struct robo_info_s {
 	bool	plc_hw;			/* PLC chip */
 #endif /* PLC */
 };
+/* Foxconn add start by Lewis Min, 04/02/2008, for igmp snooping */
+#ifdef __CONFIG_IGMP_SNOOPING__
+struct igmp_snooping_table_s {
+	uint8   mh_mac[6];
+	uint16 port_mapping;
+};
+typedef struct igmp_snooping_table_s igmp_snooping_table_t;
+#endif
+/*Add end by foxconn lewis min for snooping function ,04/01/2008*/
 
 /* Power Save mode related functions */
 extern int32 robo_power_save_mode_get(robo_info_t *robo, int32 phy);
@@ -169,6 +211,13 @@ extern void robo_dump_regs(robo_info_t *robo, struct bcmstrbuf *b);
 
 extern void robo_watchdog(robo_info_t *robo);
 extern void robo_eee_advertise_init(robo_info_t *robo);
+/* foxconn added start, zacker, 01/13/2012, @iptv_igmp */
+#if defined(CONFIG_RUSSIA_IPTV)
+extern void set_iptv_ports(robo_info_t *robo);
+extern uint16 get_iptv_ports(void);
+extern int is_iptv_port(int port);
+#endif
+/* foxconn added end, zacker, 01/13/2012, @iptv_igmp */
 
 #ifdef PLC
 extern void robo_plc_hw_init(robo_info_t *robo);
