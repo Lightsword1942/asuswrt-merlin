@@ -2706,12 +2706,14 @@ struct sk_buff BCMFASTPATH_HOST *tcp_tso_segment(struct sk_buff *skb, int featur
 	 * the old method since the packets are passed up to the application
 	 * layer.
 	 */
-	if (!skb->tcpf_nf && !(skb_shinfo(skb)->frag_list)) {
+	/* Remove by Foxconn Peter 06/14/2013 For ipv6 web login issue */
+        //if (!skb->tcpf_nf) {
+	if (0) {
 		return skb_tcp_segment(skb, features, oldlen, thlen);
 	}
 
 	/* Old method */
-	skb->tcpf_nf = 0;
+	//skb->tcpf_nf = 0;  /*there does't define skb->tcpf_nf */
 	segs = skb_segment(skb, features);
 	if (IS_ERR(segs))
 		goto out;
