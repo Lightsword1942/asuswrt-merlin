@@ -38,6 +38,42 @@
 
 #define PPP_VERSION	"2.4.2"
 
+#define OBUFSIZE	4096
+
+/* Structure for storing local state. */
+struct asyncppp {
+	struct tty_struct *tty;
+	unsigned int	flags;
+	unsigned int	state;
+	unsigned int	rbits;
+	int		mru;
+	spinlock_t	xmit_lock;
+	spinlock_t	recv_lock;
+	unsigned long	xmit_flags;
+	u32		xaccm[8];
+	u32		raccm;
+	unsigned int	bytes_sent;
+	unsigned int	bytes_rcvd;
+
+	struct sk_buff	*tpkt;
+	int		tpkt_pos;
+	u16		tfcs;
+	unsigned char	*optr;
+	unsigned char	*olim;
+	unsigned long	last_xmit;
+
+	struct sk_buff	*rpkt;
+	int		lcp_fcs;
+	struct sk_buff_head rqueue;
+
+	struct tasklet_struct tsk;
+
+	atomic_t	refcnt;
+	struct semaphore dead_sem;
+	struct ppp_channel chan;	/* interface to generic ppp layer */
+	unsigned char	obuf[OBUFSIZE];
+};
+
 /* Bit numbers in xmit_flags */
 #define XMIT_WAKEUP	0
 #define XMIT_FULL	1
@@ -73,10 +109,13 @@ static void ppp_async_process(unsigned long arg);
 static void async_lcp_peek(struct asyncppp *ap, unsigned char *data,
 			   int len, int inbound);
 
-static const struct ppp_channel_ops async_ops = {
+/* foxconn modified start, wklin 12/09/2010 
+ * makw async_ops public so it can be referenced in ppp_push() */
+/*static*/ const struct ppp_channel_ops async_ops = {
 	.start_xmit = ppp_async_send,
 	.ioctl      = ppp_async_ioctl,
 };
+/* foxconn modified end, wklin, 12/09/2010 */
 
 /*
  * Routines implementing the PPP line discipline.
