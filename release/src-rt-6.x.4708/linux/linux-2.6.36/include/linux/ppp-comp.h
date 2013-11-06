@@ -26,7 +26,7 @@
  */
 
 /*
- *  ==FILEVERSION 20040509==
+ *  ==FILEVERSION 980319==
  *
  *  NOTE TO MAINTAINERS:
  *     If you modify this file at all, please set the above date.
@@ -78,7 +78,7 @@ struct compressor {
 
 	/* Compress a packet */
 	int     (*compress) (void *state, unsigned char *rptr,
-			     unsigned char *obuf, int isize, int osize);
+			      unsigned char *obuf, int isize, int osize);
 
 	/* Return compression statistics */
 	void	(*comp_stat) (void *state, struct compstat *stats);
@@ -99,7 +99,7 @@ struct compressor {
 
 	/* Decompress a packet. */
 	int	(*decompress) (void *state, unsigned char *ibuf, int isize,
-			       unsigned char *obuf, int osize);
+				unsigned char *obuf, int osize);
 
 	/* Update state for an incompressible packet received */
 	void	(*incomp) (void *state, unsigned char *ibuf, int icnt);
@@ -193,7 +193,7 @@ struct compressor {
 #define DEFLATE_CHK_SEQUENCE	0
 
 /*
- * Definitions for MPPE/MPPC.
+ * Definitions for MPPE.
  */
 
 #define CI_MPPE                18      /* config option for MPPE */
