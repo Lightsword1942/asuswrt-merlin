@@ -946,11 +946,11 @@ done:
 static ssize_t
 dev_nvram_write(struct file *file, const char *buf, size_t count, loff_t *ppos)
 {
-	char tmp[512], *name = tmp, *value;
+	char tmp[100], *name = tmp, *value;
 	ssize_t ret;
 
-	if ((count+1) > sizeof(tmp)) {
-		if (!(name = kmalloc(count+1, GFP_KERNEL)))
+	if (count > sizeof(tmp)) {
+		if (!(name = kmalloc(count, GFP_KERNEL)))
 			return -ENOMEM;
 	}
 
@@ -958,7 +958,7 @@ dev_nvram_write(struct file *file, const char *buf, size_t count, loff_t *ppos)
 		ret = -EFAULT;
 		goto done;
 	}
-	name[count] = '\0';
+	name[ count ] = '\0';
 	value = name;
 	name = strsep(&value, "=");
 	if (value)
@@ -990,17 +990,7 @@ dev_nvram_ioctl(
 {
 	if (cmd != NVRAM_MAGIC)
 		return -EINVAL;
-
-#ifndef NLS_XFR
-        return nvram_commit();
-#else
-        if(arg == 0)
-                return nvram_commit();
-        else {
-                if(nvram_xfr((char *)arg)==NULL) return -EFAULT;
-                else return 0;
-        }
-#endif  // NLS_XFR
+	return nvram_commit();
 }
 
 static int
