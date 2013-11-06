@@ -25,6 +25,10 @@
 #include <asm/atomic.h>
 #include <asm/unaligned.h>
 #include "br_private.h"
+/* Foxconn added start pling 07/02/2007 */
+#define MAX_MAC_CNT     1024
+static int mac_cnt = 0; 
+/* Foxconn added end pling 07/02/2007 */
 #ifdef HNDCTF
 #include <linux/if.h>
 #include <linux/if_vlan.h>
@@ -73,7 +77,7 @@ br_brc_init(ctf_brc_t *brc, unsigned char *ea, struct net_device *rxdev)
 void
 br_brc_add(unsigned char *ea, struct net_device *rxdev)
 {
-	ctf_brc_t brc_entry, *brcp;
+	ctf_brc_t brc_entry;
 
 	/* Add brc entry only if packet is received on ctf 
 	 * enabled interface
@@ -89,10 +93,9 @@ br_brc_add(unsigned char *ea, struct net_device *rxdev)
 #endif
 
 	/* Add the bridge cache entry */
-	if ((brcp = ctf_brc_lkup(kcih, ea)) == NULL)
+	if (ctf_brc_lkup(kcih, ea) == NULL)
 		ctf_brc_add(kcih, &brc_entry);
-	else {
-		ctf_brc_release(kcih, brcp);
+	else
 		ctf_brc_update(kcih, &brc_entry);
 	}
 
@@ -261,14 +264,10 @@ void br_fdb_cleanup(unsigned long _data)
 				 * on this connection for timeout period.
 				 */
 				brcp = ctf_brc_lkup(kcih, f->addr.addr);
-				if (brcp != NULL) {
-					if (brcp->live > 0) {
-						brcp->live = 0;
-						ctf_brc_release(kcih, brcp);
-						f->ageing_timer = jiffies;
-						continue;
-					}
-					ctf_brc_release(kcih, brcp);
+				if ((brcp != NULL) && (brcp->live > 0)) {
+					brcp->live = 0;
+					f->ageing_timer = jiffies;
+					continue;
 				}
 #endif /* HNDCTF */
 				fdb_delete(f);
@@ -451,8 +450,13 @@ static struct net_bridge_fdb_entry *fdb_create(struct hlist_head *head,
 {
 	struct net_bridge_fdb_entry *fdb;
 
+    /* foxconn wklin added start, 06/18/2008 */
+    if (mac_cnt > MAX_MAC_CNT)
+        return 0;
+    /* foxconn wklin added end, 06/18/2008 */
 	fdb = kmem_cache_alloc(br_fdb_cache, GFP_ATOMIC);
 	if (fdb) {
+        mac_cnt++; /* foxconn wklin added , 06/18/2008 */
 		memcpy(fdb->addr.addr, addr, ETH_ALEN);
 		hlist_add_head_rcu(&fdb->hlist, head);
 
