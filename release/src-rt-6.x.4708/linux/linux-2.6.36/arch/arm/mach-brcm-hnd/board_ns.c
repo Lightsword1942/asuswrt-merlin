@@ -547,7 +547,9 @@ static uint lookup_flash_rootfs_offset(struct mtd_info *mtd, int *trx_off, size_
 		/* Try looking at TRX header for rootfs offset */
 		if (le32_to_cpu(trx->magic) == TRX_MAGIC) {
 			*trx_off = off;
+#if !defined(R7000)
 			*trx_size = le32_to_cpu(trx->len);
+#endif
 			if (trx->offsets[1] == 0)
 				continue;
 			/*
@@ -586,7 +588,22 @@ static uint lookup_flash_rootfs_offset(struct mtd_info *mtd, int *trx_off, size_
 
 	return off;
 }
-
+#if defined(R7000)
+struct mtd_partition *
+init_mtd_partitions(hndsflash_t *sfl_info, struct mtd_info *mtd, size_t size)
+{
+	struct romfs_super_block *romfsb;
+	struct cramfs_super *cramfsb;
+	struct squashfs_super_block *squashfsb;
+	struct trx_header *trx;
+	unsigned char buf[512];
+	int off;
+	size_t len;
+	int i;
+	uint32 offset = 0;
+	uint rfs_off = 0;
+	uint vmlz_off=0, knl_size;
+#else
 struct mtd_partition *
 init_mtd_partitions(hndsflash_t *sfl_info, struct mtd_info *mtd, size_t size)
 {
@@ -602,6 +619,78 @@ init_mtd_partitions(hndsflash_t *sfl_info, struct mtd_info *mtd, size_t size)
 #ifdef CONFIG_CRASHLOG
 	char create_crash_partition = 0;
 #endif
+#endif
+#if defined(R7000)
+#if 0
+	romfsb = (struct romfs_super_block *) buf;
+	cramfsb = (struct cramfs_super *) buf;
+	squashfsb = (struct squashfs_super_block *) buf;
+	trx = (struct trx_header *) buf;
+#endif
+ 
+	/* Setup NVRAM MTD partition */
+	i = (sizeof(bcm947xx_parts)/sizeof(struct mtd_partition)) - 2;
+
+	bcm947xx_parts[i].size = ROUNDUP(NVRAM_SPACE, mtd->erasesize);
+	bcm947xx_parts[i].offset = size - bcm947xx_parts[i].size;
+
+	/* foxconn added start, zacker, 08/19/2010 */
+	for (i = i - 1; i > 2; i--)
+	{
+		if (strncmp(bcm947xx_parts[i].name, "board_data", 10) == 0)
+			bcm947xx_parts[i].size = (mtd->erasesize) * 1; /* 64K */
+		else if (strncmp(bcm947xx_parts[i].name, "POT", 3) == 0)
+			bcm947xx_parts[i].size = (mtd->erasesize) * 1; /* 64K */
+		else if (strncmp(bcm947xx_parts[i].name, "T_Meter", 7) == 0)
+			bcm947xx_parts[i].size = (mtd->erasesize) * 1; /* 64K */
+		else if (strncmp(bcm947xx_parts[i].name, "ML", 2) == 0)
+			bcm947xx_parts[i].size = (mtd->erasesize) * 1; /* 64K */
+		else
+		{
+			printk(KERN_ERR "%s: Unknow MTD name %s\n",
+			__FUNCTION__, bcm947xx_parts[i].name);
+			break;
+		}
+
+		bcm947xx_parts[i].offset = bcm947xx_parts[i + 1].offset
+									- bcm947xx_parts[i].size;
+	}
+	/* foxconn added end, zacker, 08/19/2010 */
+	/* Size of boot */
+
+	rfs_off = lookup_flash_rootfs_offset(mtd, &vmlz_off, size);
+//	bcm947xx_parts[0].size = 256 * 1024;
+	bcm947xx_parts[0].size = vmlz_off;
+	/* Size of linux */
+//	bcm947xx_parts[1].offset = 0;
+	bcm947xx_parts[1].offset = vmlz_off;
+	
+//	bcm947xx_parts[1].size = 0;
+	bcm947xx_parts[1].size = mtd->size - vmlz_off;
+	/* size of rootfs */
+    knl_size = bcm947xx_parts[1].size;
+//	bcm947xx_parts[2].offset = 0;
+//	bcm947xx_parts[2].size = 0;
+	bcm947xx_parts[2].size = knl_size - (rfs_off - vmlz_off);
+	bcm947xx_parts[2].offset = rfs_off;
+	bcm947xx_parts[1].size -= (12*0X10000);
+	bcm947xx_parts[2].size -= (12*0X10000);
+	
+
+	return bcm947xx_parts;
+}
+
+EXPORT_SYMBOL(init_mtd_partitions);
+
+#endif /* CONFIG_MTD_PARTITIONS */
+
+
+
+
+
+
+
+#else
 #ifdef CONFIG_FAILSAFE_UPGRADE
 	char *img_boot = nvram_get(BOOTPARTITION);
 	char *imag_1st_offset = nvram_get(IMAGE_FIRST_OFFSET);
@@ -642,7 +731,7 @@ init_mtd_partitions(hndsflash_t *sfl_info, struct mtd_info *mtd, size_t size)
 		bcm947xx_flash_parts[nparts].offset = top;
 		bcm947xx_flash_parts[nparts].mask_flags = MTD_WRITEABLE; /* forces on read only */
 		nparts++;
-
+#endif
 		/* Setup kernel MTD partition */
 		bcm947xx_flash_parts[nparts].name = "linux";
 #ifdef CONFIG_FAILSAFE_UPGRADE
