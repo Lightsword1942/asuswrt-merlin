@@ -128,6 +128,13 @@ var staticclist_row = dhcp_staticlists.split('&#60');
 var openvpn_clientlist_array ='<% nvram_get("vpn_server_ccd_val"); %>';
 var openvpn_unit = '<% nvram_get("vpn_server_unit"); %>';
 
+if (openvpn_unit == '1')
+	var service_state = (<% sysinfo("pid.vpnserver1"); %> > 0);
+else if (openvpn_unit == '2')
+	var service_state = (<% sysinfo("pid.vpnserver2"); %> > 0);
+else
+	var service_state = false;
+
 ciphersarray = [
 		["AES-128-CBC"],
 		["AES-192-CBC"],
@@ -447,6 +454,10 @@ function openvpn_applyRule(){
 
 	showLoading();
 
+	if (service_state) {
+		document.form.action_script.value = "restart_vpnserver" + openvpn_unit;
+	}
+
 	var client_num = $('openvpn_clientlist_table').rows.length;
 	var item_num = $('openvpn_clientlist_table').rows[0].cells.length;
 	var tmp_value = "";
@@ -483,6 +494,7 @@ function openvpn_applyRule(){
 		}
 	}
 
+// TODO: Only restart if instance is running?
 	if (tmp_value != document.openvpn_form.vpn_serverx_dns.value) {
 		document.openvpn_form.action_script.value += ";restart_dnsmasq";
 		document.openvpn_form.vpn_serverx_dns.value = tmp_value;
@@ -673,7 +685,6 @@ function cancel_Key_panel(auth){
 	if(auth == 'tls'){
 			this.FromObject ="0";
 			$j("#tlsKey_panel").fadeOut(300);	
-
 			if (openvpn_unit == 1) {
 				setTimeout("document.getElementById('edit_vpn_crt_server1_ca').value = '<% nvram_clean_get("vpn_crt_server1_ca"); %>';", 300);
 				setTimeout("document.getElementById('edit_vpn_crt_server1_crt').value = '<% nvram_clean_get("vpn_crt_server1_crt"); %>';", 300);
@@ -700,24 +711,27 @@ function cancel_Key_panel(auth){
 function save_keys(auth){
 	if(auth == 'tls'){
 		if (openvpn_unit == "1") {
-			document.openvpn_form.vpn_crt_server1_ca.value = document.getElementById('edit_vpn_crt_server1_ca');
-			document.openvpn_form.vpn_crt_server1_crt.value = document.getElementById('edit_vpn_crt_server1_crt');
-			document.openvpn_form.vpn_crt_server1_key.value = document.getElementById('edit_vpn_crt_server1_key');
-			document.openvpn_form.vpn_crt_server1_dh.value = document.getElementById('edit_vpn_crt_server1_dh');
+			document.openvpn_form.vpn_crt_server1_ca.value = document.getElementById('edit_vpn_crt_server1_ca').value;
+			document.openvpn_form.vpn_crt_server1_crt.value = document.getElementById('edit_vpn_crt_server1_crt').value;
+			document.openvpn_form.vpn_crt_server1_key.value = document.getElementById('edit_vpn_crt_server1_key').value;
+			document.openvpn_form.vpn_crt_server1_dh.value = document.getElementById('edit_vpn_crt_server1_dh').value;
 		}else{
-			document.openvpn_form.vpn_crt_server2_ca.value = document.getElementById('edit_vpn_crt_server2_ca');
-			document.openvpn_form.vpn_crt_server2_crt.value = document.getElementById('edit_vpn_crt_server2_crt');
-			document.openvpn_form.vpn_crt_server2_key.value = document.getElementById('edit_vpn_crt_server2_key');
-			document.openvpn_form.vpn_crt_server2_dh.value = document.getElementById('edit_vpn_crt_server2_dh');
+			document.openvpn_form.vpn_crt_server2_ca.value = document.getElementById('edit_vpn_crt_server2_ca').value;
+			document.openvpn_form.vpn_crt_server2_crt.value = document.getElementById('edit_vpn_crt_server2_crt').value;
+			document.openvpn_form.vpn_crt_server2_key.value = document.getElementById('edit_vpn_crt_server2_key').value;
+			document.openvpn_form.vpn_crt_server2_dh.value = document.getElementById('edit_vpn_crt_server2_dh').value;
 		}
-		cancel_Key_panel('tls');
-	}else if(auth == 'secret'){			
+		this.FromObject ="0";
+		$j("#tlsKey_panel").fadeOut(300);	
+
+	}else if(auth == 'secret'){
 		if (openvpn_unit == "1"){
-			document.openvpn_form.vpn_crt_server1_static.value = document.getElementById('edit_vpn_crt_server1_static');
+			document.openvpn_form.vpn_crt_server1_static.value = document.getElementById('edit_vpn_crt_server1_static').value;
 		}else{
-			document.openvpn_form.vpn_crt_server2_static.value = document.getElementById('edit_vpn_crt_server2_static');
+			document.openvpn_form.vpn_crt_server2_static.value = document.getElementById('edit_vpn_crt_server2_static').value;
 		}
-		cancel_Key_panel('secret');		
+		this.FromObject ="0";			
+		$j("#staticKey_panel").fadeOut(300);
 	}
 
 }
@@ -812,7 +826,7 @@ function cal_panel_block(){
       				</table>
 						<div style="margin-top:5px;width:100%;text-align:center;">
 							<input class="button_gen" type="button" onclick="cancel_Key_panel('tls');" value="<#CTL_Cancel#>">
-							<input class="button_gen" type="button" onclick="save_keys('tls');" value="<#CTL_onlysave#>">	
+							<input class="button_gen" type="button" onclick="save_keys('tls');" value="Ok">	
 						</div>					
           		</td>
       		</tr>
@@ -851,7 +865,7 @@ function cal_panel_block(){
 					</table>
 						<div style="margin-top:5px;width:100%;text-align:center;">
 							<input class="button_gen" type="button" onclick="cancel_Key_panel('secret');" value="<#CTL_Cancel#>">
-							<input class="button_gen" type="button" onclick="save_keys('secret');" value="<#CTL_onlysave#>">
+							<input class="button_gen" type="button" onclick="save_keys('secret');" value="Ok">
 						</div>
 					</td>
 				</tr>
@@ -1016,7 +1030,7 @@ function cal_panel_block(){
 			<input type="hidden" name="next_host" value="">
 			<input type="hidden" name="modified" value="0">
 			<input type="hidden" name="action_mode" value="apply">
-			<input type="hidden" name="action_script" value="restart_vpnd">
+			<input type="hidden" name="action_script" value="">
 			<input type="hidden" name="action_wait" value="10">
 			<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 			<input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">			
@@ -1044,7 +1058,7 @@ function cal_panel_block(){
                 				<div class="formfonttitle"><#BOP_isp_heart_item#> - <#vpn_Adv#></div>
                 				<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 								<div class="formfontdesc">
-									<p><br>In case of problem, see the <a style="font-weight: bolder;text-decoration:underline;" class="hyperlink" href="Main_LogStatus_Content.asp">System Log</a> for any error message related to openvpn.
+									<p>In case of problem, see the <a style="font-weight: bolder;text-decoration:underline;" class="hyperlink" href="Main_LogStatus_Content.asp">System Log</a> for any error message related to openvpn.
 									<p><br>Visit the OpenVPN <a style="font-weight: bolder; text-decoration:underline;" class="hyperlink" href="http://openvpn.net/index.php/open-source/downloads.html" target="_blank">Download</a> page to get the Windows client.
 								</div>
 
