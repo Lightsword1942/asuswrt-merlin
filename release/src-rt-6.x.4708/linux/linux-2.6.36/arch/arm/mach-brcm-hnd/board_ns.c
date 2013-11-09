@@ -303,7 +303,7 @@ void soc_watchdog(void)
 	if (watchdog > 0)
 		si_watchdog_ms(sih, watchdog);
 }
-
+#if !defined(R7000)
 #define CFE_UPDATE 1		// added by Chen-I for mac/regulation update
 
 #ifdef CFE_UPDATE
@@ -313,7 +313,7 @@ void bcm947xx_watchdog_disable(void)
 	si_watchdog_ms(sih, 0);
 }
 #endif
-
+#endif
 void __init board_init(void)
 {
 early_printk("board_init\n");
@@ -493,10 +493,12 @@ static uint32 boot_partition_size(uint32 flash_phys) {
 #else
 #define FAILSAFE_PARTS 0
 #endif
+#if !defined(R7000)
 #if defined(CONFIG_CRASHLOG)
 #define CRASHLOG_PARTS 1
 #else
 #define CRASHLOG_PARTS 0
+#endif
 #endif
 /* boot;nvram;kernel;rootfs;empty */
 #define FLASH_PARTS_NUM	(5+MTD_PARTS+PLC_PARTS+FAILSAFE_PARTS+CRASHLOG_PARTS)
