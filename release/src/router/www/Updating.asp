@@ -12,7 +12,8 @@
 	parent.$("hiddenMask").style.visibility = "hidden";
 	if(parent.based_modelid == "RT-AC56U"
 			|| parent.based_modelid == "RT-AC66U"
-			|| parent.based_modelid == "RT-AC68U"){		//MODELDEP: RT-AC56U, RT-AC66U, RT-AC68U 2013.03
+			|| parent.based_modelid == "RT-AC68U"
+			|| parent.based_modelid == "R7000"){		//MODELDEP: RT-AC56U, RT-AC66U, RT-AC68U 2013.03
 			parent.showLoadingBar(90);
 			setTimeout("parent.detect_httpd();", 92000);
 	}else if(parent.based_modelid == "RT-AC52U"){			//MODELDEP: RT-AC52U
