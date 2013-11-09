@@ -889,6 +889,67 @@ static struct mtd_partition bcm947xx_nflash_parts[NFLASH_PARTS_NUM] = {
 		.offset = 0,
 		.mask_flags = MTD_WRITEABLE
 	},
+
+	{ 
+		.name = "board_data", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "POT1", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "POT2", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "T_Meter1", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "T_Meter2", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML1", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML2", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML3", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML4", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML5", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML6", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML7", 
+		.offset = 0, 
+		.size = 0, 
+	},
 #else
 
 		/* Setup kernel MTD partition */
@@ -906,11 +967,25 @@ static struct mtd_partition bcm947xx_nflash_parts[NFLASH_PARTS_NUM] = {
 			bcm947xx_flash_parts[nparts].size -= ROUNDUP(0x1000, mtd->erasesize);
 #endif
 #endif
+#if defined(R7000)
+	{ 
+		.name = "QoSRule", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{
+		.name = 0,
+		.size = 0,
+		.offset = 0
+	}
+};
+#else
 #ifdef BCMCONFMTD
 			bcm947xx_flash_parts[nparts].size -= (mtd->erasesize *4);
 #endif
 		}
-#endif
+
+
 
 
 #else
@@ -1007,6 +1082,7 @@ static struct mtd_partition bcm947xx_nflash_parts[NFLASH_PARTS_NUM] = {
 		offset = bcm947xx_flash_parts[nparts].size;
 		nparts++;
 	}
+#endif
 
 #ifdef BCMCONFMTD
 	/* Setup CONF MTD partition */
@@ -1044,7 +1120,7 @@ EXPORT_SYMBOL(init_mtd_partitions);
 
 #define NFLASH_PARTS_NUM	7
 static struct mtd_partition bcm947xx_nflash_parts[NFLASH_PARTS_NUM] = {{0}};
-
+#endif
 static uint
 lookup_nflash_rootfs_offset(hndnand_t *nfl, struct mtd_info *mtd, int offset, size_t size)
 {
