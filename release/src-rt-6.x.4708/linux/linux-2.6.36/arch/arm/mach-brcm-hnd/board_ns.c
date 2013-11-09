@@ -271,7 +271,11 @@ static int __init rootfs_mtdblock(void)
 		block += 2;
 #endif
 	/* Boot from norflash and kernel in nandflash */
+#if defined(R7000)
+	return (sizeof(bcm947xx_parts)/sizeof(struct mtd_partition));	/* Bob modified */
+#else
 	return block+3;
+#endif
 }
 
 static void __init brcm_setup(void)
