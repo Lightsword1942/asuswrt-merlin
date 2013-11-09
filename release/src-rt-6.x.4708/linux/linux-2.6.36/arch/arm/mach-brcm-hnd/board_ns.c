@@ -501,12 +501,20 @@ static uint32 boot_partition_size(uint32 flash_phys) {
 #endif
 #endif
 /* boot;nvram;kernel;rootfs;empty */
+#if defined(R7000)
+#define FLASH_PARTS_NUM	(15+MTD_PARTS+PLC_PARTS+FAILSAFE_PARTS)
+#else
 #define FLASH_PARTS_NUM	(5+MTD_PARTS+PLC_PARTS+FAILSAFE_PARTS+CRASHLOG_PARTS)
-
+#endif
+#if defined(R7000)
+//static struct mtd_partition bcm947xx_flash_parts[FLASH_PARTS_NUM] = {{0}};
+static uint lookup_flash_rootfs_offset(struct mtd_info *mtd, int *trx_off, size_t size)
+#else
 static struct mtd_partition bcm947xx_flash_parts[FLASH_PARTS_NUM] = {{0}};
-
 static uint lookup_flash_rootfs_offset(struct mtd_info *mtd, int *trx_off, size_t size, 
                                        uint32 *trx_size)
+#endif
+
 {
 	struct romfs_super_block *romfsb;
 	struct cramfs_super *cramfsb;
