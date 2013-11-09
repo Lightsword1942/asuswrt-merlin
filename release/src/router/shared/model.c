@@ -38,6 +38,7 @@ static const struct model_s model_list[] = {
 	{ "RT-N10P",	MODEL_RTN10P	},
 	{ "RT-N10D1",	MODEL_RTN10D1	},
 	{ "RT-N10PV2",	MODEL_RTN10PV2	},
+	{ "R7000",	MODEL_R7000	},
 #else	/* RTCONFIG_RALINK */
 #ifdef RTCONFIG_DSL
 	{ "DSL-N55U",	MODEL_DSLN55U	},
