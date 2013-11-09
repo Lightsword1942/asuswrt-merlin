@@ -493,6 +493,7 @@ static uint32 boot_partition_size(uint32 flash_phys) {
 #else
 #define FAILSAFE_PARTS 0
 #endif
+
 #if !defined(R7000)
 #if defined(CONFIG_CRASHLOG)
 #define CRASHLOG_PARTS 1
@@ -506,6 +507,7 @@ static uint32 boot_partition_size(uint32 flash_phys) {
 #else
 #define FLASH_PARTS_NUM	(5+MTD_PARTS+PLC_PARTS+FAILSAFE_PARTS+CRASHLOG_PARTS)
 #endif
+
 #if defined(R7000)
 //static struct mtd_partition bcm947xx_flash_parts[FLASH_PARTS_NUM] = {{0}};
 static uint lookup_flash_rootfs_offset(struct mtd_info *mtd, int *trx_off, size_t size)
@@ -547,9 +549,11 @@ static uint lookup_flash_rootfs_offset(struct mtd_info *mtd, int *trx_off, size_
 		/* Try looking at TRX header for rootfs offset */
 		if (le32_to_cpu(trx->magic) == TRX_MAGIC) {
 			*trx_off = off;
+
 #if !defined(R7000)
 			*trx_size = le32_to_cpu(trx->len);
 #endif
+
 			if (trx->offsets[1] == 0)
 				continue;
 			/*
@@ -619,7 +623,30 @@ init_mtd_partitions(hndsflash_t *sfl_info, struct mtd_info *mtd, size_t size)
 #ifdef CONFIG_CRASHLOG
 	char create_crash_partition = 0;
 #endif
+#ifdef CONFIG_FAILSAFE_UPGRADE
+	char *img_boot = nvram_get(BOOTPARTITION);
+	char *imag_1st_offset = nvram_get(IMAGE_FIRST_OFFSET);
+	char *imag_2nd_offset = nvram_get(IMAGE_SECOND_OFFSET);
+	unsigned int image_first_offset = 0;
+	unsigned int image_second_offset = 0;
+	char dual_image_on = 0;
+
+	/* The image_1st_size and image_2nd_size are necessary if the Flash does not have any
+	 * image
+	 */
+	dual_image_on = (img_boot != NULL && imag_1st_offset != NULL && imag_2nd_offset != NULL);
+
+	if (dual_image_on) {
+		image_first_offset = simple_strtol(imag_1st_offset, NULL, 10);
+		image_second_offset = simple_strtol(imag_2nd_offset, NULL, 10);
+		printk("The first offset=%x, 2nd offset=%x\n", image_first_offset,
+			image_second_offset);
+
+	}
 #endif
+
+
+
 #if defined(R7000)
 #if 0
 	romfsb = (struct romfs_super_block *) buf;
@@ -684,11 +711,116 @@ EXPORT_SYMBOL(init_mtd_partitions);
 
 #endif /* CONFIG_MTD_PARTITIONS */
 
+#ifdef	CONFIG_MTD_NFLASH
+/*Foxconn modify start by Hank 10/24/2012*/
+/*add full partition on nandflash for using nandflash boot up*/
+#if defined(R6200v2)
+#define NFLASH_PARTS_NUM	19
+static struct mtd_partition bcm947xx_nflash_parts[NFLASH_PARTS_NUM] = {
+	{
+		.name = "boot",
+		.size = 0,
+		.offset = 0,
+		.mask_flags = MTD_WRITEABLE
+	},
+	{
+		.name = "nvram",
+		.size = 0,
+		.offset = 0
+	},
+	{
+		.name = "linux",
+		.size = 0,
+		.offset = 0
+	},
+	{
+		.name = "rootfs",
+		.size = 0,
+		.offset = 0,
+		.mask_flags = MTD_WRITEABLE
+	},
+	{ 
+		.name = "board_data", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "POT1", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "POT2", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "T_Meter1", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "T_Meter2", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML1", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML2", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML3", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML4", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML5", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML6", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "ML7", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "R1", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{ 
+		.name = "R2", 
+		.offset = 0, 
+		.size = 0, 
+	},
+	{
+		.name = 0,
+		.size = 0,
+		.offset = 0
+	}
 
 
 
 
 
+
+#else
 
 #else
 #ifdef CONFIG_FAILSAFE_UPGRADE
@@ -732,6 +864,33 @@ EXPORT_SYMBOL(init_mtd_partitions);
 		bcm947xx_flash_parts[nparts].mask_flags = MTD_WRITEABLE; /* forces on read only */
 		nparts++;
 #endif
+#if defined(R7000)
+#define NFLASH_PARTS_NUM	18
+static struct mtd_partition bcm947xx_nflash_parts[NFLASH_PARTS_NUM] = {
+	{
+		.name = "boot",
+		.size = 0,
+		.offset = 0,
+		.mask_flags = MTD_WRITEABLE
+	},
+	{
+		.name = "nvram",
+		.size = 0,
+		.offset = 0
+	},
+	{
+		.name = "linux",
+		.size = 0,
+		.offset = 0
+	},
+	{
+		.name = "rootfs",
+		.size = 0,
+		.offset = 0,
+		.mask_flags = MTD_WRITEABLE
+	},
+#else
+
 		/* Setup kernel MTD partition */
 		bcm947xx_flash_parts[nparts].name = "linux";
 #ifdef CONFIG_FAILSAFE_UPGRADE
@@ -746,10 +905,14 @@ EXPORT_SYMBOL(init_mtd_partitions);
 			/* Reserve for PLC */
 			bcm947xx_flash_parts[nparts].size -= ROUNDUP(0x1000, mtd->erasesize);
 #endif
+#endif
 #ifdef BCMCONFMTD
 			bcm947xx_flash_parts[nparts].size -= (mtd->erasesize *4);
 #endif
 		}
+#endif
+
+
 #else
 
 		bcm947xx_flash_parts[nparts].size = mtd->size - vmlz_off;
