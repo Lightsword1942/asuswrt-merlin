@@ -425,6 +425,11 @@ add_option (char *p[], int line, int unit)
 		sprintf(buf, "vpn_client%d_cipher", unit);
 		nvram_set(buf, p[1]);
 	}
+	else if (streq (p[0], "redirect-gateway") && (!p[1] || streq (p[1], "def1")))	// Only handle if default GW
+	{
+		sprintf(buf, "vpn_client%d_rgw", unit);
+		nvram_set(buf, "1");
+	}
 	else if (streq (p[0], "verb") && p[1])
 	{
 		nvram_set("vpn_loglevel", p[1]);
@@ -436,7 +441,7 @@ add_option (char *p[], int line, int unit)
 		if (streq (p[1], INLINE_FILE_TAG) && p[2])
 		{
 			sprintf(buf, "vpn_crt_client%d_ca", unit);
-			nvram_set(buf, strstr(p[2], "-----BEGIN"));
+			write_encoded_crt(buf, strstr(p[2], "-----BEGIN"));
 		}
 		else
 		{
@@ -448,7 +453,7 @@ add_option (char *p[], int line, int unit)
 		if (streq (p[1], INLINE_FILE_TAG) && p[2])
 		{
 			sprintf(buf, "vpn_crt_client%d_crt", unit);
-			nvram_set(buf, strstr(p[2], "-----BEGIN"));
+			write_encoded_crt(buf, strstr(p[2], "-----BEGIN"));
 		}
 		else
 		{
@@ -460,7 +465,7 @@ add_option (char *p[], int line, int unit)
 		if (streq (p[1], INLINE_FILE_TAG) && p[2])
 		{
 			sprintf(buf, "vpn_crt_client%d_key", unit);
-			nvram_set(buf, strstr(p[2], "-----BEGIN"));
+			write_encoded_crt(buf, strstr(p[2], "-----BEGIN"));
 		}
 		else
 		{
@@ -472,7 +477,7 @@ add_option (char *p[], int line, int unit)
 		if (streq (p[1], INLINE_FILE_TAG) && p[2])
 		{
 			sprintf(buf, "vpn_crt_client%d_static", unit);
-			nvram_set(buf, strstr(p[2], "-----BEGIN"));
+			write_encoded_crt(buf, strstr(p[2], "-----BEGIN"));
 		}
 		else
 		{
@@ -490,7 +495,7 @@ add_option (char *p[], int line, int unit)
 		if (streq (p[1], INLINE_FILE_TAG) && p[2])
 		{
 			sprintf(buf, "vpn_crt_client%d_static", unit);
-			nvram_set(buf, strstr(p[2], "-----BEGIN"));
+			write_encoded_crt(buf, strstr(p[2], "-----BEGIN"));
 		}
 		else
 		{
@@ -573,6 +578,8 @@ void reset_client_setting(int unit){
 	nvram_set(nv, "-1");
 	sprintf(nv, "vpn_client%d_cipher", unit);
 	nvram_set(nv, "default");
+	sprintf(nv, "vpn_client%d_rgw", unit);
+	nvram_set(nv, "0");
 	sprintf(nv, "vpn_client%d_tlsremote", unit);
 	nvram_set(nv, "0");
 	sprintf(nv, "vpn_client%d_cn", unit);

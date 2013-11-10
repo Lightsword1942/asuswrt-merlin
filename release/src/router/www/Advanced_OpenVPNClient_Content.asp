@@ -104,6 +104,7 @@ else if (openvpn_unit == 2)
 else
 	service_state = false;
 
+
 ciphersarray = [
 		["AES-128-CBC"],
 		["AES-128-CFB"],
@@ -155,6 +156,12 @@ function initial()
 	add_option(document.form.vpn_client_cipher, "Default","default",(currentcipher == "Default"));
 	add_option(document.form.vpn_client_cipher, "None","none",(currentcipher == "none"));
 
+	// Extract the type out of the interface name 
+	// (imported ovpn can result in this being tun3, for example)
+	currentiface = "<% nvram_get("vpn_client_if"); %>";
+	add_option(document.form.vpn_client_if_x, "TUN","tun",(currentiface.indexOf("tun") != -1));
+	add_option(document.form.vpn_client_if_x, "TAP","tap",(currentiface.indexOf("tap") != -1));
+
 	for(var i = 0; i < ciphersarray.length; i++){
 		add_option(document.form.vpn_client_cipher,
 			ciphersarray[i][0], ciphersarray[i][0],
@@ -193,7 +200,7 @@ function update_visibility(){
 
 	fw = document.form.vpn_client_firewall.value;
 	auth = document.form.vpn_client_crypt.value;
-	iface = document.form.vpn_client_if.value;
+	iface = document.form.vpn_client_if_x.value;
 	bridge = getRadioValue(document.form.vpn_client_bridge);
 	nat = getRadioValue(document.form.vpn_client_nat);
 	hmac = document.form.vpn_client_hmac.value;
@@ -348,6 +355,8 @@ function applyRule(){
 	}
 	document.form.vpn_clientx_eas.value = tmp_value;
 
+	document.form.vpn_client_if.value = document.form.vpn_client_if_x.value;
+	
 	document.form.submit();
 
 }
@@ -365,6 +374,8 @@ function pass_checked(obj){
 }
 
 function ImportOvpn(){
+	if (document.getElementById('ovpnfile').value == "") return false;
+
 	document.getElementById('importOvpnFile').style.display = "none";
 	document.getElementById('loadingicon').style.display = "";
 
@@ -431,22 +442,22 @@ function ovpnFileChecker(){
 										<tr>
 											<th id="manualCa">Certificate Authority</th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client1_ca" name="edit_vpn_crt_client1_ca" cols="65" maxlength="3499"><% nvram_get("vpn_crt_client1_ca"); %></textarea>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client2_ca" name="edit_vpn_crt_client2_ca" cols="65" maxlength="3499"><% nvram_get("vpn_crt_client2_ca"); %></textarea>
+												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client1_ca" name="edit_vpn_crt_client1_ca" cols="65" maxlength="3499"><% nvram_clean_get("vpn_crt_client1_ca"); %></textarea>
+												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client2_ca" name="edit_vpn_crt_client2_ca" cols="65" maxlength="3499"><% nvram_clean_get("vpn_crt_client2_ca"); %></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualCert">Client Certificate</th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client1_crt" name="edit_vpn_crt_client1_crt" cols="65" maxlength="3499"><% nvram_get("vpn_crt_client1_crt"); %></textarea>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client2_crt" name="edit_vpn_crt_client2_crt" cols="65" maxlength="3499"><% nvram_get("vpn_crt_client2_crt"); %></textarea>
+												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client1_crt" name="edit_vpn_crt_client1_crt" cols="65" maxlength="3499"><% nvram_clean_get("vpn_crt_client1_crt"); %></textarea>
+												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client2_crt" name="edit_vpn_crt_client2_crt" cols="65" maxlength="3499"><% nvram_clean_get("vpn_crt_client2_crt"); %></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualKey">Client Key</th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client1_key" name="edit_vpn_crt_client1_key" cols="65" maxlength="3499"><% nvram_get("vpn_crt_client1_key"); %></textarea>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client2_key" name="edit_vpn_crt_client2_key" cols="65" maxlength="3499"><% nvram_get("vpn_crt_client2_key"); %></textarea>
+												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client1_key" name="edit_vpn_crt_client1_key" cols="65" maxlength="3499"><% nvram_clean_get("vpn_crt_client1_key"); %></textarea>
+												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client2_key" name="edit_vpn_crt_client2_key" cols="65" maxlength="3499"><% nvram_clean_get("vpn_crt_client2_key"); %></textarea>
 											</td>
 										</tr>
 									</table>
@@ -527,17 +538,18 @@ function ovpnFileChecker(){
 <input type="hidden" name="SystemCmd" value="">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-<input type="hidden" name="vpn_clientx_eas" value="<% nvram_get("vpn_clientx_eas"); %>">
-<input type="hidden" name="vpn_crt_client1_ca" value="<% nvram_get("vpn_crt_client1_ca"); %>">
-<input type="hidden" name="vpn_crt_client1_crt" value="<% nvram_get("vpn_crt_client1_crt"); %>">
-<input type="hidden" name="vpn_crt_client1_key" value="<% nvram_get("vpn_crt_client1_key"); %>">
-<input type="hidden" name="vpn_crt_client1_static" value="<% nvram_get("vpn_crt_client1_static"); %>">
-<input type="hidden" name="vpn_crt_client2_ca" value="<% nvram_get("vpn_crt_client2_ca"); %>">
-<input type="hidden" name="vpn_crt_client2_crt" value="<% nvram_get("vpn_crt_client2_crt"); %>">
-<input type="hidden" name="vpn_crt_client2_key" value="<% nvram_get("vpn_crt_client2_key"); %>">
-<input type="hidden" name="vpn_crt_client2_static" value="<% nvram_get("vpn_crt_client2_static"); %>">
+<input type="hidden" name="vpn_clientx_eas" value="<% nvram_clean_get("vpn_clientx_eas"); %>">
+<input type="hidden" name="vpn_crt_client1_ca" value="<% nvram_clean_get("vpn_crt_client1_ca"); %>">
+<input type="hidden" name="vpn_crt_client1_crt" value="<% nvram_clean_get("vpn_crt_client1_crt"); %>">
+<input type="hidden" name="vpn_crt_client1_key" value="<% nvram_clean_get("vpn_crt_client1_key"); %>">
+<input type="hidden" name="vpn_crt_client1_static" value="<% nvram_clean_get("vpn_crt_client1_static"); %>">
+<input type="hidden" name="vpn_crt_client2_ca" value="<% nvram_clean_get("vpn_crt_client2_ca"); %>">
+<input type="hidden" name="vpn_crt_client2_crt" value="<% nvram_clean_get("vpn_crt_client2_crt"); %>">
+<input type="hidden" name="vpn_crt_client2_key" value="<% nvram_clean_get("vpn_crt_client2_key"); %>">
+<input type="hidden" name="vpn_crt_client2_static" value="<% nvram_clean_get("vpn_crt_client2_static"); %>">
 <input type="hidden" name="vpn_upload_type" value="ovpn">
 <input type="hidden" name="vpn_upload_unit" value="<% nvram_get("vpn_client_unit"); %>">
+<input type="hidden" name="vpn_client_if" value="<% nvram_get("vpn_client_if"); %>">
 
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
@@ -612,7 +624,7 @@ function ovpnFileChecker(){
 					<tr>
 							<th>Import ovpn file</th>
 						<td>
-							<input type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
+							<input id="ovpnfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
 							<input id="" class="button_gen" onclick="ImportOvpn();" type="button" value="<#CTL_upload#>" />
 								<img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
 								<span id="importOvpnFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
@@ -639,9 +651,7 @@ function ovpnFileChecker(){
 					<tr>
 						<th>Interface Type</th>
 			        		<td>
-			       				<select name="vpn_client_if"  onclick="update_visibility();" class="input_option">
-								<option value="tap" <% nvram_match("vpn_client_if","tap","selected"); %> >TAP</option>
-								<option value="tun" <% nvram_match("vpn_client_if","tun","selected"); %> >TUN</option>
+			       				<select name="vpn_client_if_x"  onclick="update_visibility();" class="input_option">
 							</select>
 			   			</td>
 					</tr>
