@@ -1213,12 +1213,6 @@ init_nflash_mtd_partitions(hndnand_t *nfl, struct mtd_info *mtd, size_t size)
 	uint shift = 0;
 	uint32 top = 0;
 	uint32 bootsz;
-#if defined(R7000)
-	/*Foxconn modify start by Hank 10/24/2012*/
-	uint32 partition_size;
-	int i=0;
-	/*Foxconn modify end by Hank 10/24/2012*/
-#endif
 #ifdef CONFIG_FAILSAFE_UPGRADE
 	char *img_boot = nvram_get(BOOTPARTITION);
 	char *imag_1st_offset = nvram_get(IMAGE_FIRST_OFFSET);
@@ -1243,21 +1237,12 @@ init_nflash_mtd_partitions(hndnand_t *nfl, struct mtd_info *mtd, size_t size)
 
 	bootdev = soc_boot_dev((void *)sih);
 	knldev = soc_knl_dev((void *)sih);
-#if defined(R7000)
-	/*Foxconn modify end by Hank 10/24/2012*/
-	/*Get erase size of nandflash*/
-	partition_size = mtd->erasesize;
-	/*Foxconn modify end by Hank 10/24/2012*/
-#endif
 
 	if (bootdev == SOC_BOOTDEV_NANDFLASH) {
 		bootsz = boot_partition_size(nfl->base);
 		if (bootsz > mtd->erasesize) {
 			/* Prepare double space in case of bad blocks */
-			/*Foxconn modify start by Hank 10/26/2012*/
-			/*change bootcode size*/
-			bootsz = (bootsz << 1); 
-			/*Foxconn modify end by Hank 10/26/2012*/
+			bootsz = (bootsz << 1);
 		} else {
 			/* CFE occupies at least one block */
 			bootsz = mtd->erasesize;
@@ -1265,45 +1250,6 @@ init_nflash_mtd_partitions(hndnand_t *nfl, struct mtd_info *mtd, size_t size)
 		printk("Boot partition size = %d(0x%x)\n", bootsz, bootsz);
 
 		/* Size pmon */
-#if defined(R7000)
-		/*Foxconn modify start by Hank 10/24/2012*/
-		/*set bootcode and nvram size and offset*/
-		bcm947xx_nflash_parts[0].name = "boot";
-		/*Foxconn modify start by Hank 10/24/2012*/
-		/*change to dynamic size of bootcode*/
-		bcm947xx_nflash_parts[0].size = bootsz;
-		/*Foxconn modify end by Hank 10/24/2012*/
-		bcm947xx_nflash_parts[0].offset = top;
-		//bcm947xx_nflash_parts[0].mask_flags = MTD_WRITEABLE; /* forces on read only */
-		bcm947xx_nflash_parts[0].mask_flags = 0;
-		offset = bcm947xx_nflash_parts[0].size;
-
-		/*Foxconn modify start by Hank 10/24/2012*/
-		/*change to dynamic size of nvram*/
-		bcm947xx_nflash_parts[1].size = NFL_BOOT_SIZE - bootsz;
-		bcm947xx_nflash_parts[1].offset = bcm947xx_nflash_parts[0].size;
-		/*Foxconn modify end by Hank 10/24/2012*/
-		/*remove older partition setting*/
-#if 0
-		bcm947xx_nflash_parts[nparts].name = "boot";
-		bcm947xx_nflash_parts[nparts].size = bootsz;
-		bcm947xx_nflash_parts[nparts].offset = top;
-		bcm947xx_nflash_parts[nparts].mask_flags = MTD_WRITEABLE; /* forces on read only */
-		offset = bcm947xx_nflash_parts[nparts].size;
-		nparts++;
-
-		/* Setup NVRAM MTD partition */
-		bcm947xx_nflash_parts[nparts].name = "nvram";
-		bcm947xx_nflash_parts[nparts].size = NFL_BOOT_SIZE - offset;
-		bcm947xx_nflash_parts[nparts].offset = offset;
-
-		offset = NFL_BOOT_SIZE;
-		nparts++;
-#endif
-		/*Foxconn modify end by Hank 10/24/2012*/
-	}
-#else
-
 		bcm947xx_nflash_parts[nparts].name = "boot";
 		bcm947xx_nflash_parts[nparts].size = bootsz;
 		bcm947xx_nflash_parts[nparts].offset = top;
@@ -1319,52 +1265,8 @@ init_nflash_mtd_partitions(hndnand_t *nfl, struct mtd_info *mtd, size_t size)
 		offset = NFL_BOOT_SIZE;
 		nparts++;
 	}
-#endif
-	/*Foxconn modify start by Hank 10/24/2012*/
+
 	if (knldev == SOC_KNLDEV_NANDFLASH) {
-
-#if defined(R6200v2)
-		/* Size of linux */
-		bcm947xx_nflash_parts[2].offset = bcm947xx_nflash_parts[1].offset + bcm947xx_nflash_parts[1].size;
-		bcm947xx_nflash_parts[2].size = NFL_BOOT_OS_SIZE; /* reserved 32 MB for firmware */ //NFL_BOOT_OS_SIZE - bcm947xx_nflash_parts[2].offset ;
-	
-		shift = lookup_nflash_rootfs_offset(nfl, mtd, bcm947xx_nflash_parts[2].offset,
-				bcm947xx_nflash_parts[2].size );
-	
-		/* size of rootfs */
-		bcm947xx_nflash_parts[3].offset = shift;
-		bcm947xx_nflash_parts[3].size = (bcm947xx_nflash_parts[2].offset + bcm947xx_nflash_parts[2].size) - shift;
-			
-		/* Setup other MTD partition */
-		for (i = 4; i < 18; i++){
-			bcm947xx_nflash_parts[i].size = partition_size*2; /* reserved 2 block for each partition */
-			bcm947xx_nflash_parts[i].offset = bcm947xx_nflash_parts[i-1].offset + bcm947xx_nflash_parts[i-1].size;
-		}
-#elif defined(R7000)
-		bcm947xx_nflash_parts[2].offset = NFL_BOOT_SIZE;
-		bcm947xx_nflash_parts[2].size = NFL_BOOT_OS_SIZE;
-
-		shift = lookup_nflash_rootfs_offset(nfl, mtd, bcm947xx_nflash_parts[2].offset,	bcm947xx_nflash_parts[2].size );
-
-		bcm947xx_nflash_parts[3].offset = shift;
-		bcm947xx_nflash_parts[3].size = (bcm947xx_nflash_parts[2].offset + bcm947xx_nflash_parts[2].size) - shift;
-	
-		/* size of rootfs */
-		/* Setup other MTD partition */
-		for (i = 4; i < 17; i++){
-                     if(i==7 ||i==8)
-			bcm947xx_nflash_parts[i].size = (partition_size <<2 );
-                     else
-			bcm947xx_nflash_parts[i].size = (partition_size <<1 );
-		     bcm947xx_nflash_parts[i].offset = bcm947xx_nflash_parts[i-1].offset + bcm947xx_nflash_parts[i-1].size;
-		}
-	
-		/* Size of linux */
-	
-#else	
-	 /* defined(R6200v2) */
-		/*remove older partition setting*/
-#if 0
 		/* Setup kernel MTD partition */
 		bcm947xx_nflash_parts[nparts].name = "linux";
 #ifdef CONFIG_FAILSAFE_UPGRADE
@@ -1421,8 +1323,7 @@ init_nflash_mtd_partitions(hndnand_t *nfl, struct mtd_info *mtd, size_t size)
 			nparts++;
 		}
 #endif	/* CONFIG_FAILSAFE_UPGRADE */
-#endif
-	/*Foxconn modify end by Hank 10/24/2012*/
+
 	}
 
 #ifdef PLAT_NAND_JFFS2
@@ -1507,7 +1408,6 @@ static int __init cfenenad_parser_init(void)
 module_init(cfenenad_parser_init);
 
 #endif /* CONFIG_MTD_NFLASH */
-#if !defined(R7000)
 
 #ifdef CONFIG_CRASHLOG
 extern char *get_logbuf(void);
@@ -1550,4 +1450,3 @@ void nvram_store_crash(void)
 	}
 }
 #endif /* CONFIG_CRASHLOG */
-#endif
