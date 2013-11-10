@@ -96,98 +96,7 @@ static struct clk_lookup board_clk_lookups[] = {
 	.clk		= &clk_ref,
 	}
 };
-#if defined(R7000)
-static struct mtd_partition bcm947xx_parts[] =
-{
-	{
-		.name = "boot",
-		.size = 0,
-		.offset = 0,
-		.mask_flags = MTD_WRITEABLE
-	},
-	{
-		.name = "linux",
-		.size = 0,
-		.offset = 0
-	},
-	{
-		.name = "rootfs",
-		.size = 0,
-		.offset = 0,
-		.mask_flags = MTD_WRITEABLE
-	},
-	/* reserve sectors for multi-language implementation */
-	/* Foxconn add start, Tony W.Y. Wang, 01/12/2010 */
-	{ 
-		.name = "ML1", 
-		.offset = 0, 
-		.size = 0, 
-	},
-	{ 
-		.name = "ML2", 
-		.offset = 0, 
-		.size = 0, 
-	},
-	{ 
-		.name = "ML3", 
-		.offset = 0, 
-		.size = 0, 
-	},
-	{ 
-		.name = "ML4", 
-		.offset = 0, 
-		.size = 0, 
-	},
-	{ 
-		.name = "ML5", 
-		.offset = 0, 
-		.size = 0, 
-	},
-	{ 
-		.name = "ML6", 
-		.offset = 0, 
-		.size = 0, 
-	},
-	{ 
-		.name = "ML7", 
-		.offset = 0, 
-		.size = 0, 
-	},
-	/* Foxconn add end, Tony W.Y. Wang, 01/12/2010 */
-	/* Foxconn added start pling 06/30/2006 */
-	{ 
-		.name = "T_Meter1", 
-		.offset = 0, 
-		.size = 0, 
-	},
-	{ 
-		.name = "T_Meter2", 
-		.offset = 0, 
-		.size = 0, 
-	},
-	{ 
-		.name = "POT", 
-		.offset = 0, 
-		.size = 0, 
-	},
-	{ 
-		.name = "board_data", 
-		.offset = 0, 
-		.size = 0, 
-	},
-	/* Foxconn added end pling 06/30/2006 */
-	{
-		.name = "nvram",
-		.size = 0,
-		.offset = 0
-	},
-	{
-		.name = 0,
-		.size = 0,
-		.offset = 0
-	}
-};
-#endif
+
 extern int _memsize;
 
 void __init board_map_io(void)
@@ -237,16 +146,7 @@ static int __init rootfs_mtdblock(void)
 		else
 			return 3;
 #else
-		/*Foxconn modify by Hank 10/24/2012*/
-		/*change linux partition when using nandflash boot up*/
-
-#if defined(R6200v2)    
-        return 3; 
-#elif defined(R7000)
-		return 3; 
-#else
-		return 3; 
-#endif
+		return 3;
 #endif
 	}
 
